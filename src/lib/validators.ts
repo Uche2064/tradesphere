@@ -30,6 +30,16 @@ export function validatePassword(value: string): string {
   return "";
 }
 
+export function validateConfirmPassword(value: string, password: string): string {
+  if (!value) {
+    return "Le mot de passe est requis";
+  }
+  if (value !== password) {
+    return "Les mots de passe ne correspondent pas";
+  }
+  return "";
+}
+
 export function validatePasswordForLogin(value: string): string {
   if (!value) {
     return "Le mot de passe est requis";

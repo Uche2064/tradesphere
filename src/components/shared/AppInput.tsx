@@ -66,7 +66,7 @@ export default function AppInput({
           onKeyDown={onKeyDown}
           className={`w-full ${Icon ? "pl-10" : "pl-4"} ${
             hasRightIcon ? "pr-10" : "pr-4"
-          } py-5 rounded-lg dark:text-white transition-colors placeholder:text-muted-foreground ${
+          } py-5 rounded-lg dark:text-white transition-colors dark:bg-black/30 placeholder:text-muted-foreground ${
             error
               ? "border-red-500 dark:border-red-500"
               : ""
@@ -78,7 +78,7 @@ export default function AppInput({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+            className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
             tabIndex={-1}
             disabled={disabled}
           >

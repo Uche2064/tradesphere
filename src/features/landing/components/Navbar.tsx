@@ -68,15 +68,9 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth/login"
-                className="text-sm bg-transparent hover:bg-slate-100 text-slate-900 dark:text-slate-300 dark:hover:text-white sm:inline-flex px-4 py-3 rounded-md dark:hover:bg-slate-800"
-              >
-                Se connecter
-              </Link>
-              <Link
-                href="/auth/register"
                 className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md"
               >
-                Créer mon espace
+                S'authentifier
               </Link>
               <ModeToggle />
             </>
