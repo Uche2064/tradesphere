@@ -61,11 +61,11 @@ export function initializeWebSocket(server: HTTPServer) {
       console.log(`📍 Joined room: company:${user.companyId}`);
     }
 
-    // TODO: Restore storeId when schema has storeId field
-    // if (user.storeId) {
-    //   socket.join(`store:${user.storeId}`);
-    //   console.log(`📍 Joined room: store:${user.storeId}`);
-    // }
+    // Rejoindre la room du magasin si disponible
+    if (user.storeId) {
+      socket.join(`store:${user.storeId}`);
+      console.log(`📍 Joined room: store:${user.storeId}`);
+    }
 
     // SuperAdmin rejoint une room globale
     // TODO: Restore Role.type when schema is fixed
@@ -112,17 +112,21 @@ export function emitStockUpdate(
 ) {
   const socketIO = getIO();
   
-  // TODO: Restore store room when schema has storeId field
-  // socketIO.to(`store:${storeId}`).emit("stock:update", {...});
-
-  // Émettre vers la company (pour le directeur)
-  socketIO.to(`company:${companyId}`).emit("stock:update", {
+  const eventData = {
     type: "STOCK_UPDATE",
     payload: data,
     timestamp: new Date(),
     companyId,
     storeId,
-  });
+  };
+
+  // Émettre vers le magasin spécifique (pour les vendeurs dans ce magasin)
+  if (storeId) {
+    socketIO.to(`store:${storeId}`).emit("stock:update", eventData);
+  }
+
+  // Émettre vers la company (pour le directeur)
+  socketIO.to(`company:${companyId}`).emit("stock:update", eventData);
 }
 
 export function emitSaleCompleted(
@@ -141,26 +145,24 @@ export function emitSaleCompleted(
 ) {
   const socketIO = getIO();
 
-  // TODO: Restore store room when schema has storeId field
-  // socketIO.to(`store:${storeId}`).emit("sale:completed", {...});
+  const eventData = {
+    type: "SALE_COMPLETED",
+    payload: data,
+    timestamp: new Date(),
+    companyId,
+    storeId,
+  };
+
+  // Émettre vers le magasin spécifique
+  if (storeId) {
+    socketIO.to(`store:${storeId}`).emit("sale:completed", eventData);
+  }
 
   // Émettre vers la company
-  socketIO.to(`company:${companyId}`).emit("sale:completed", {
-    type: "SALE_COMPLETED",
-    payload: data,
-    timestamp: new Date(),
-    companyId,
-    storeId,
-  });
+  socketIO.to(`company:${companyId}`).emit("sale:completed", eventData);
 
   // Émettre vers les SuperAdmins
-  socketIO.to("global").emit("sale:completed", {
-    type: "SALE_COMPLETED",
-    payload: data,
-    timestamp: new Date(),
-    companyId,
-    storeId,
-  });
+  socketIO.to("global").emit("sale:completed", eventData);
 }
 
 export function emitLowStockAlert(

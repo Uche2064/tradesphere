@@ -251,7 +251,7 @@ export default function TeamPage() {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="fullName">
-                  Nom complet <span className="text-destructive">*</span>
+                  Nom complet 
                 </Label>
                 <Input
                   id="fullName"
@@ -267,7 +267,7 @@ export default function TeamPage() {
 
               <div className="grid gap-2">
                 <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
+                  Email 
                 </Label>
                 <Input
                   id="email"
@@ -295,7 +295,7 @@ export default function TeamPage() {
 
               <div className="grid gap-2">
                 <Label htmlFor="roleType">
-                  Rôle <span className="text-destructive">*</span>
+                  Rôle 
                 </Label>
                 <Select
                   value={formData.roleType}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authMiddleware, permissionMiddleware, AuthenticatedRequest } from "@/middleware/auth";
 import prisma from "../../../../lib/prisma";
-import { emitSaleCompleted } from "@/lib/websocket/server";
+import { emitSaleCompleted, emitStockUpdate } from "@/lib/websocket/server";
 
 /**
  * GET /api/sales
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Transaction atomique pour créer la vente et déduire les stocks
-    const sale = await prisma.$transaction(async (tx) => {
+    const transactionResult = await prisma.$transaction(async (tx) => {
       // 1. Générer le numéro de vente unique
       const saleCount = await tx.sale.count({
         where: { companyId: user.companyId },
@@ -228,9 +228,28 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 4. Déduire les stocks
+      // 4. Déduire les stocks et collecter les informations pour WebSocket
+      const stockUpdates: Array<{
+        productId: string;
+        oldQuantity: number;
+        newQuantity: number;
+      }> = [];
+
       for (const item of items) {
-        await tx.stock.update({
+        // Récupérer le stock actuel avant la mise à jour
+        const currentStock = await tx.stock.findUnique({
+          where: {
+            productId_storeId: {
+              productId: item.productId,
+              storeId: user.storeId!,
+            },
+          },
+        });
+
+        const oldQuantity = currentStock?.quantity || 0;
+
+        // Mettre à jour le stock
+        const updatedStock = await tx.stock.update({
           where: {
             productId_storeId: {
               productId: item.productId,
@@ -242,6 +261,12 @@ export async function POST(req: NextRequest) {
               decrement: item.quantity,
             },
           },
+        });
+
+        stockUpdates.push({
+          productId: item.productId,
+          oldQuantity,
+          newQuantity: updatedStock.quantity,
         });
 
         // Enregistrer le mouvement de stock
@@ -258,11 +283,14 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return newSale;
+      return { sale: newSale, stockUpdates };
     });
 
-    // 5. Émettre l'événement WebSocket
+    const { sale, stockUpdates } = transactionResult;
+
+    // 5. Émettre les événements WebSocket
     try {
+      // Émettre la vente complétée
       emitSaleCompleted(user.companyId!, user.storeId!, {
         saleId: sale.id,
         saleNumber: sale.saleNumber,
@@ -273,6 +301,16 @@ export async function POST(req: NextRequest) {
           total: Number(item.total),
         })),
       });
+
+      // Émettre les mises à jour de stock pour chaque produit
+      for (const stockUpdate of stockUpdates) {
+        emitStockUpdate(user.companyId!, user.storeId!, {
+          productId: stockUpdate.productId,
+          oldQuantity: stockUpdate.oldQuantity,
+          newQuantity: stockUpdate.newQuantity,
+          reason: "sale",
+        });
+      }
     } catch (wsError) {
       console.error("Erreur WebSocket:", wsError);
     }
