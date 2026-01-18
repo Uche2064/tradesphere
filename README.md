@@ -1,4 +1,4 @@
-# 🚀 TradeSphere - Plateforme SaaS Multi-Tenant de Gestion Commerciale
+#  TradeSphere - Plateforme SaaS Multi-Tenant de Gestion Commerciale
 
 ## 📋 Table des matières
 
@@ -22,7 +22,7 @@
 
 ### Caractéristiques principales
 
-- ✅ **Multi-Tenant** : Isolation complète des données par commerce
+-  **Multi-Tenant** : Isolation complète des données par commerce
 - 🔐 **Authentification 2FA** : TOTP, Email, SMS (OBLIGATOIRE pour SuperAdmin et Directeurs)
 - 👥 **RBAC Avancé** : 5 niveaux de rôles avec permissions granulaires
 - 📊 **Temps Réel** : WebSocket pour les mises à jour de stock et ventes
@@ -100,13 +100,13 @@
 
 ### Hiérarchie des rôles
 
-1. **SUPERADMIN** 🔴
+1. **SUPERADMIN** 
    - Gestion globale de la plateforme
    - Création de tenants
    - Accès à toutes les données
    - 2FA OBLIGATOIRE
 
-2. **DIRECTEUR** 🟠
+2. **DIRECTEUR** 
    - Propriétaire d'un tenant
    - Gestion des utilisateurs
    - Gestion des magasins
@@ -118,7 +118,7 @@
    - Gestion des stocks
    - Supervision des ventes
 
-4. **VENDEUR** 🟢
+4. **VENDEUR** 
    - Interface de caisse (POS)
    - Création de ventes
    - Consultation des produits
@@ -156,11 +156,9 @@
 ### DevOps
 - **Docker** - Conteneurisation
 - **Docker Compose** - Orchestration
-- **Makefile** - Automatisation
-
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prérequis
 
@@ -210,9 +208,6 @@ cd tradesphere
 
 # 2. Copier les variables d'environnement
 cp .env.example .env
-
-# 3. Démarrer tous les services
-make full-start
 
 # Ou manuellement :
 docker-compose build
@@ -264,7 +259,238 @@ TWO_FACTOR_APP_NAME=TradeSphere
 
 ---
 
-## 🚀 Utilisation
+## Migration de Base de Données
+
+### Prérequis pour la Base de Données
+
+Avant de commencer les migrations, assurez-vous d'avoir :
+
+1. **PostgreSQL 16+** installé et en cours d'exécution
+2. **Une base de données créée** :
+   ```sql
+   CREATE DATABASE tradesphere;
+   ```
+3. **Variables d'environnement configurées** dans `.env` :
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/tradesphere?schema=public"
+   ```
+
+### Étapes de Migration
+
+#### 1. Installation des Dépendances
+```bash
+npm install
+```
+
+#### 2. Génération du Client Prisma
+```bash
+npx prisma generate
+```
+
+#### 3. Exécution des Migrations
+```bash
+# En développement (avec historique)
+npx prisma migrate dev
+
+# En production (sans historique)
+npx prisma migrate deploy
+```
+
+#### 4. Vérification du Schéma
+```bash
+npx prisma db push --preview-feature
+```
+
+#### 5. Exploration de la Base de Données
+```bash
+npx prisma studio
+```
+Ouvre une interface web sur http://localhost:5555 pour explorer les données.
+
+### Structure des Migrations
+
+Les migrations sont stockées dans `prisma/migrations/` avec la nomenclature suivante :
+- `20260116120006_init` : Migration initiale avec toutes les tables
+- `20260116132931_changed_fields_type` : Modifications des types de champs
+- `20260116133850_added_mustchangepasswordfield_to_user_table` : Ajout du champ mustChangePassword
+- `20260116140018_added_email_to_2_fa_enum` : Ajout EMAIL à l'enum TwoFactorType
+- `20260116204945_added_otp_model` : Ajout du modèle OTP
+- `20260117071857_nullable_company_attribut_in_user_table` : Company nullable dans User
+- `20260117073111_added_is_active_to_user_model` : Ajout isActive à User
+- `20260117073238_added_email_verified_at_to_user_model` : Ajout emailVerifiedAt à User
+- `20260118063031_add_unique_to_slug_in_company_and_role_tables` : Unicité des slugs
+
+### Rollback des Migrations
+
+```bash
+# Annuler la dernière migration (développement uniquement)
+npx prisma migrate reset
+
+# Marquer une migration comme appliquée
+npx prisma migrate resolve --applied 20260116120006_init
+```
+
+### Migration avec Docker
+
+```bash
+# Démarrer les services
+docker-compose up -d
+
+# Exécuter les migrations
+docker-compose exec app npx prisma migrate deploy
+
+# Ouvrir Prisma Studio
+docker-compose exec app npx prisma studio
+```
+
+---
+
+## 👥 Schéma des Rôles
+
+### Architecture RBAC (Role-Based Access Control)
+
+TradeSphere utilise un système de contrôle d'accès basé sur les rôles avec des permissions granulaires. Le système est organisé autour de :
+
+- **5 Rôles prédéfinis** avec des niveaux hiérarchiques
+- **Permissions basées sur les ressources** (tenants, users, stores, products, etc.)
+- **Actions CRUD** (create, read, update, delete, list) plus des actions spécifiques
+- **Isolation multi-tenant** complète
+
+### Hiérarchie des Rôles
+
+#### 1. SUPERADMIN  (Administrateur Système)
+**Description :** Contrôle total de la plateforme
+**2FA :** Obligatoire
+**Permissions :**
+-  **tenants** : read, list (lecture seule pour les tenants existants)
+-  **users** : create, read, update, delete, list
+-  **stores** : create, read, update, delete, list
+-  **products** : create, read, update, delete, list
+-  **categories** : create, read, update, delete, list
+-  **stocks** : read, update, list, adjust
+-  **sales** : create, read, list, refund
+-  **statistics** : read, export
+-  **audit** : read, list
+
+#### 2. DIRECTEUR  (Propriétaire d'Entreprise)
+**Description :** Gestion complète de son entreprise
+**2FA :** Obligatoire
+**Permissions :**
+-  **tenants** : create (peut créer sa propre entreprise)
+-  **users** : create, read, update, delete, list
+-  **stores** : create, read, update, delete, list
+-  **products** : create, read, update, delete, list
+-  **categories** : create, read, update, delete, list
+-  **stocks** : read, list, adjust
+-  **sales** : read, list, refund
+-  **statistics** : read, export
+-  **audit** : read, list
+
+#### 3. GERANT (Gestionnaire de Magasin)
+**Description :** Gestion opérationnelle d'un magasin
+**2FA :** Optionnel
+**Permissions :**
+-  **users** : read, list
+-  **stores** : read
+-  **products** : create, read, update, list
+-  **categories** : read, list
+-  **stocks** : read, list, adjust
+-  **sales** : create, read, list, refund
+-  **statistics** : read
+
+#### 4. VENDEUR (Caissier)
+**Description :** Interface de point de vente
+**2FA :** Optionnel
+**Permissions :**
+-  **products** : read, list
+-  **categories** : read, list
+-  **stocks** : read, list
+-  **sales** : create, read, list
+
+#### 5. MAGASINIER (Gestionnaire de Stock)
+**Description :** Gestion des inventaires
+**2FA :** Optionnel
+**Permissions :**
+-  **products** : read, list
+-  **categories** : read, list
+-  **stocks** : read, update, list, adjust
+
+### Structure des Permissions
+
+#### Format des Permissions
+Les permissions suivent le format : `resource:action`
+
+Exemples :
+- `users:create` - Créer un utilisateur
+- `products:read` - Lire les produits
+- `stocks:adjust` - Ajuster les stocks
+- `sales:refund` - Rembourser une vente
+
+#### Ressources Disponibles
+- **tenants** : Gestion des entreprises
+- **users** : Gestion des utilisateurs
+- **stores** : Gestion des magasins
+- **products** : Gestion des produits
+- **categories** : Gestion des catégories
+- **stocks** : Gestion des stocks
+- **sales** : Gestion des ventes
+- **statistics** : Accès aux statistiques
+- **audit** : Logs d'audit
+
+#### Actions Disponibles
+- **create** : Créer
+- **read** : Lire
+- **update** : Modifier
+- **delete** : Supprimer
+- **list** : Lister
+- **adjust** : Ajuster (spécifique aux stocks)
+- **refund** : Rembourser (spécifique aux ventes)
+- **export** : Exporter (spécifique aux statistiques)
+
+### Isolation Multi-Tenant
+
+Chaque rôle est automatiquement limité à son tenant :
+- **SuperAdmin** : Accès à tous les tenants
+- **Autres rôles** : Accès uniquement à leur propre tenant
+- **Middleware automatique** : Vérification du tenant à chaque requête
+- **Audit complet** : Traçabilité de toutes les actions
+
+### Configuration des Rôles
+
+Les rôles sont configurés via les seeders dans `lib/seeders/` :
+
+#### rolesSeeder.ts
+Définit les 5 rôles de base avec leurs descriptions.
+
+#### permissionsSeeder.ts
+- Définit toutes les permissions disponibles
+- Configure les permissions par rôle
+- Assigne les permissions aux rôles via RolePermission
+
+#### adminSeeder.ts
+Crée le compte SuperAdmin initial avec mot de passe temporaire.
+
+### Modification des Permissions
+
+Pour modifier les permissions d'un rôle :
+
+1. **Éditer** `lib/seeders/permissionsSeeder.ts`
+2. **Modifier** le tableau `ROLE_PERMISSIONS`
+3. **Relancer** le seeder :
+   ```bash
+   npm run seed
+   ```
+
+### Vérification des Permissions
+
+Les permissions sont vérifiées à chaque requête API via des middlewares :
+- **auth.ts** : Vérification de l'authentification
+- **rbac.ts** : Vérification des permissions
+- **tenant.ts** : Isolation multi-tenant
+
+---
+
+##  Utilisation
 
 ### Comptes de test
 
@@ -316,7 +542,7 @@ Mot de passe: Magasinier@2024
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
 ### Authentification
 
@@ -455,7 +681,7 @@ socket.on("sale:completed", (data) => {
 
 ---
 
-## 🔐 Sécurité
+## Sécurité
 
 ### Mesures implémentées
 
@@ -489,58 +715,6 @@ socket.on("sale:completed", (data) => {
    - IP et User-Agent enregistrés
    - Conservation configurable
 
----
-
-## 🧪 Tests
-
-```bash
-# Tests unitaires
-npm run test
-
-# Tests d'intégration
-npm run test:integration
-
-# Tests E2E
-npm run test:e2e
-
-# Coverage
-npm run test:coverage
-```
-
----
-
-## 🐳 Commandes Docker utiles
-
-```bash
-# Démarrer les services
-make up
-
-# Arrêter les services
-make down
-
-# Voir les logs
-make logs
-
-# Logs de l'application uniquement
-make logs-app
-
-# Shell dans le conteneur
-make docker-shell
-
-# Shell PostgreSQL
-make docker-db-shell
-
-# Migrations en production
-make docker-migrate
-
-# Seed en production
-make docker-seed
-
-# Reset complet
-make clean
-```
-
----
 
 ## 📈 Déploiement
 
