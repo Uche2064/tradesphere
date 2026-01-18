@@ -218,7 +218,7 @@ L'application sera disponible sur **http://localhost:3000**
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Variables d'environnement
 
@@ -248,7 +248,7 @@ REDIS_URL=redis://localhost:6379
 3. Utilisez ce mot de passe dans `GMAIL_PASSWORD`
 
 ---
-
+```
 ## Migration de Base de Données
 
 ### Prérequis pour la Base de Données
@@ -296,21 +296,6 @@ npx prisma db push --preview-feature
 npx prisma studio
 ```
 Ouvre une interface web sur http://localhost:5555 pour explorer les données.
-
-### Structure des Migrations
-
-Les migrations sont stockées dans `prisma/migrations/` avec la nomenclature suivante :
-- `20260116120006_init` : Migration initiale avec toutes les tables
-- `20260116132931_changed_fields_type` : Modifications des types de champs
-- `20260116133850_added_mustchangepasswordfield_to_user_table` : Ajout du champ mustChangePassword
-- `20260116140018_added_email_to_2_fa_enum` : Ajout EMAIL à l'enum TwoFactorType
-- `20260116204945_added_otp_model` : Ajout du modèle OTP
-- `20260117071857_nullable_company_attribut_in_user_table` : Company nullable dans User
-- `20260117073111_added_is_active_to_user_model` : Ajout isActive à User
-- `20260117073238_added_email_verified_at_to_user_model` : Ajout emailVerifiedAt à User
-- `20260118063031_add_unique_to_slug_in_company_and_role_tables` : Unicité des slugs
-
-### Rollback des Migrations
 
 ```bash
 # Annuler la dernière migration (développement uniquement)
