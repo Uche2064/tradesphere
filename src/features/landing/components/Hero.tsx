@@ -7,8 +7,8 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/lib/components/ui/badge";
+import { Button } from "@/lib/components/ui/button";
 
 export default async function HeroSection() {
 
@@ -61,7 +61,7 @@ export default async function HeroSection() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">
                     <TrendingUp className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">247K €</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">247K FCFA</p>
                     <p className="text-xs text-slate-600 dark:text-slate-400">CA ce mois</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ModeToggle } from "@/components/shared/ModeToggle";
+import { ModeToggle } from "@/lib/shared/components/ModeToggle";
 
 export default function AuthLayout({
   children,

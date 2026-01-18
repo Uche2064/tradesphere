@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: tradesphere-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tradesphere
+      POSTGRES_PASSWORD: tradesphere_password_2024
+      POSTGRES_DB: tradesphere
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradesphere"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tradesphere-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: tradesphere-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tradesphere-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tradesphere-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://tradesphere:tradesphere_password_2024@postgres:5432/tradesphere?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_ACCESS_SECRET=your-super-secret-access-key-change-in-production
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+      - JWT_ACCESS_EXPIRATION=900
+      - JWT_REFRESH_EXPIRATION=604800
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - TWO_FACTOR_APP_NAME=TradeSphere
+      # Email configuration (ajuster selon votre provider)
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tradesphere-network
+    volumes:
+      - ./public/uploads:/app/public/uploads
+
+networks:
+  tradesphere-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

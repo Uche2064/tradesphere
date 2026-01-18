@@ -7,13 +7,23 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/card";
+} from "@/lib/components/ui/card";
 import RegisterFormStep1 from "@/features/auth/forms/register/RegisterFormStep1";
 import RegisterFormStep2 from "@/features/auth/forms/register/RegisterFormStep2";
-import RegisterHeader from "@/features/auth/forms/register/RegisterHearder";
-import { validateConfirmPassword, validateEmail, validateField, validatePassword, validatePasswordForLogin } from "@/lib/validators";
+import RegisterHeader from "@/features/auth/components/FormHeader";
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validateField,
+  validatePassword,
+  validatePasswordForLogin,
+} from "@/lib/validators";
 import Link from "next/link";
 import { useState } from "react";
+import FormHeader from "@/features/auth/components/FormHeader";
+import { getAppRouteName } from "@/lib/constants";
+import { RouteNames } from "@/lib/enums";
+import FormContainer from "../../components/FormContainer";
 
 interface Country {
   name: {
@@ -46,12 +56,15 @@ export default function RegisterForm() {
     country: "",
   });
 
-  const handleStep1Submit = async () => { 
+  const handleStep1Submit = async () => {
     const fullNameError = validateField(fullName);
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
-    const confirmPasswordError = validateConfirmPassword(confirmPassword, password);
-    
+    const confirmPasswordError = validateConfirmPassword(
+      confirmPassword,
+      password
+    );
+
     if (fullNameError || emailError || passwordError || confirmPasswordError) {
       setErrors({
         ...errors,
@@ -77,8 +90,9 @@ export default function RegisterForm() {
     },
   };
   return (
-    <Card className="dark:bg-black/30 shadow-md dark:shadow-md">
-      <RegisterHeader
+    <FormContainer>
+      <FormHeader
+        showAsteriskPrompt={true}
         step={step}
         totalSteps={2}
         title={headerContent[step as keyof typeof headerContent].title}
@@ -124,7 +138,7 @@ export default function RegisterForm() {
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Vous avez déjà un compte ?{" "}
             <Link
-              href="/auth/login"
+              href={getAppRouteName(RouteNames.login)}
               className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               Se connecter
@@ -132,6 +146,6 @@ export default function RegisterForm() {
           </p>
         </div>
       </CardFooter>{" "}
-    </Card>
+    </FormContainer>
   );
 }

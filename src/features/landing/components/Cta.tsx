@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/lib/components/ui/button";
 
 export default function Cta() {
   return (

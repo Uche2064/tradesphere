@@ -1,9 +1,9 @@
 "use client";
 
-import AppInput from "@/components/shared/AppInput";
-import { Button } from "@/components/ui/button";
+import AppInput from "@/lib/shared/components/AppInput";
+import { Button } from "@/lib/components/ui/button";
 
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/lib/components/ui/textarea";
 import { Loader2, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

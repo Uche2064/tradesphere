@@ -3,9 +3,9 @@ import {
   CardDescription,
   CardTitle,
   CardHeader,
-} from "@/components/ui/card";
+} from "@/lib/components/ui/card";
 import { BarChart3, Shield, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/lib/components/ui/badge";
 
 export default function Reasons() {
   return (

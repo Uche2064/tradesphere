@@ -1,4 +1,4 @@
-import ScrollToTopButton from "@/components/shared/ScrollToTopButton";
+import ScrollToTopButton from "@/lib/shared/components/ScrollToTopButton";
 import Cta from "@/features/landing/components/Cta";
 import Features from "@/features/landing/components/Features";
 import Footer from "@/features/landing/components/Footer";

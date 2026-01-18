@@ -1,13 +1,13 @@
 import { Building2, Activity, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/lib/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import AppInput from "@/components/shared/AppInput";
+} from "@/lib/components/ui/select";
+import AppInput from "@/lib/shared/components/AppInput";
 
 interface Country {
   name: {

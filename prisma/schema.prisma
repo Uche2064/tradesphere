@@ -1,0 +1,315 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Company {
+  id                 String             @id @default(cuid())
+  slug               String             @unique
+  companyName        String             @unique
+  businessType       String
+  country            String
+  companyAddress     String?
+  companyLogo        String?
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  maxUsers           Int                @default(10)
+  maxStores          Int                @default(1)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  users              User[]
+  stores             Store[]
+  products           Product[]
+  sales              Sale[]
+  categories         Category[]
+  auditLogs          AuditLog[]
+}
+
+model User {
+  id                 String          @id @default(cuid())
+  email              String          @unique
+  password           String
+  fullName           String
+  phone              String?
+  avatar             String?
+  roleId             String
+  companyId          String?
+  storeId            String?
+  isTwoFactor        Boolean?        @default(false)
+  twoFactorSecret    String?
+  twoFactorType      TwoFactorType?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  mustChangePassword Boolean         @default(true)
+  isActive           Boolean         @default(false)
+  emailVerifiedAt    DateTime?
+  lastLoginAt        DateTime?
+  otps               Otp[]
+  company            Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role               Role            @relation(fields: [roleId], references: [id])
+  store              Store?          @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  sales              Sale[]
+  stockMovements     StockMovement[]
+  auditLogs          AuditLog[]
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String
+  type        RoleType         @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Store {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String
+  address        String?
+  phone          String?
+  email          String?
+  companyId      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  users          User[]
+  stocks         Stock[]
+  sales          Sale[]
+  stockMovements StockMovement[]
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  parentId    String?
+  companyId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryTree")
+  products    Product[]
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+  @@index([parentId])
+}
+
+model Product {
+  id             String          @id @default(cuid())
+  sku            String
+  name           String
+  description    String?
+  image          String?
+  purchasePrice  Decimal         @db.Decimal(10, 2)
+  sellingPrice   Decimal         @db.Decimal(10, 2)
+  taxRate        Decimal         @default(0) @db.Decimal(5, 2)
+  categoryId     String?
+  companyId      String
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stocks         Stock[]
+  saleItems      SaleItem[]
+  stockMovements StockMovement[]
+
+  @@unique([companyId, sku])
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model Stock {
+  id          String   @id @default(cuid())
+  productId   String
+  storeId     String
+  quantity    Int      @default(0)
+  minQuantity Int      @default(0)
+  maxQuantity Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, storeId])
+  @@index([storeId])
+  @@index([productId])
+}
+
+model StockMovement {
+  id        String            @id @default(cuid())
+  productId String
+  storeId   String
+  userId    String
+  type      StockMovementType
+  quantity  Int
+  reason    String?
+  saleId    String?
+  notes     String?
+  createdAt DateTime          @default(now())
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store     Store             @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sale      Sale?             @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([storeId])
+  @@index([userId])
+  @@index([saleId])
+  @@index([createdAt])
+}
+
+model Sale {
+  id               String          @id @default(cuid())
+  saleNumber       String          @unique
+  subtotal         Decimal         @db.Decimal(10, 2)
+  taxAmount        Decimal         @db.Decimal(10, 2)
+  discount         Decimal         @default(0) @db.Decimal(10, 2)
+  total            Decimal         @db.Decimal(10, 2)
+  paymentMethod    PaymentMethod
+  paymentReference String?
+  customerName     String?
+  customerPhone    String?
+  customerEmail    String?
+  notes            String?
+  companyId        String
+  storeId          String
+  userId           String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  company          Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  store            Store           @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  user             User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items            SaleItem[]
+  stockMovements   StockMovement[]
+
+  @@index([companyId])
+  @@index([storeId])
+  @@index([userId])
+  @@index([saleNumber])
+  @@index([createdAt])
+}
+
+model SaleItem {
+  id        String   @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+  taxRate   Decimal  @db.Decimal(5, 2)
+  subtotal  Decimal  @db.Decimal(10, 2)
+  taxAmount Decimal  @db.Decimal(10, 2)
+  total     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  resource    String
+  action      String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+
+  @@unique([resource, action])
+  @@index([resource])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  resource   String
+  resourceId String?
+  details    String?
+  userId     String?
+  companyId  String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  company    Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}
+
+enum TwoFactorType {
+  SMS
+  TOTP
+  EMAIL
+}
+
+enum RoleType {
+  SUPERADMIN
+  DIRECTEUR
+  GERANT
+  VENDEUR
+  MAGASINIER
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER
+  RETURN
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE_MONEY
+  BANK_TRANSFER
+  CHEQUE
+}

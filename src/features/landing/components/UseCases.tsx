@@ -1,8 +1,8 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/lib/components/ui/card";
+import { CardDescription } from "@/lib/components/ui/card";
 import { Building2, Store } from "lucide-react";
 import { Database } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/lib/components/ui/badge";
 
 export default function UseCases() {
   return (

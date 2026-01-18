@@ -1,6 +1,6 @@
 import { User, Mail, Lock, LogIn } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import AppInput from "@/components/shared/AppInput";
+import { Button } from "@/lib/components/ui/button";
+import AppInput from "@/lib/shared/components/AppInput";
 
 interface RegisterFormProps {
   fullName: string;

@@ -2,7 +2,7 @@
 import Link from "next/link";
 
 import { Store } from "lucide-react";
-import { ModeToggle } from "@/components/shared/ModeToggle";
+import { ModeToggle } from "@/lib/shared/components/ModeToggle";
 
 interface NavbarProps {
   showNavigation: boolean;

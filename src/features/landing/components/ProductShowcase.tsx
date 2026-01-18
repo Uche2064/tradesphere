@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/lib/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
 import { Clock } from "lucide-react";
 import { TrendingUp } from "lucide-react";
@@ -70,7 +70,7 @@ export default function ProductShowcase() {
                     <p className="text-white/60 dark:text-white/50 text-xs mb-1">
                       Ventes aujourd&apos;hui
                     </p>
-                    <p className="text-2xl font-bold text-white">8,942 €</p>
+                    <p className="text-2xl font-bold text-white">8,942 FCFA</p>
                     <p className="text-green-400 dark:text-green-500 text-xs mt-1">+18.2%</p>
                   </div>
                   <div className="bg-white/10 dark:bg-white/5 backdrop-blur rounded-lg p-4 border border-white/20 dark:border-white/10">

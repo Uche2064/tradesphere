@@ -1,36 +1,596 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 TradeSphere - Plateforme SaaS Multi-Tenant de Gestion Commerciale
 
-## Getting Started
+## 📋 Table des matières
 
-First, run the development server:
+- [À propos](#à-propos)
+- [Fonctionnalités](#fonctionnalités)
+- [Architecture](#architecture)
+- [Technologies](#technologies)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Utilisation](#utilisation)
+- [API Documentation](#api-documentation)
+- [Sécurité](#sécurité)
+- [Tests](#tests)
+- [Déploiement](#déploiement)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 📖 À propos
+
+**TradeSphere** est une plateforme SaaS moderne de gestion commerciale multi-tenant conçue pour les entreprises de vente au détail et de commerce. Elle offre une gestion complète des stocks, des ventes, des utilisateurs et des statistiques en temps réel.
+
+### Caractéristiques principales
+
+- ✅ **Multi-Tenant** : Isolation complète des données par commerce
+- 🔐 **Authentification 2FA** : TOTP, Email, SMS (OBLIGATOIRE pour SuperAdmin et Directeurs)
+- 👥 **RBAC Avancé** : 5 niveaux de rôles avec permissions granulaires
+- 📊 **Temps Réel** : WebSocket pour les mises à jour de stock et ventes
+- 🔄 **Transactions Atomiques** : Gestion sécurisée des stocks
+- 📈 **Statistiques** : Dashboards et rapports en temps réel
+- 🐳 **Dockerisé** : Déploiement facile avec Docker Compose
+
+---
+
+## ⚡ Fonctionnalités
+
+### Gestion des utilisateurs
+- Système d'authentification JWT avec refresh tokens
+- 2FA obligatoire (TOTP avec QR code, Email OTP)
+- Gestion des rôles et permissions (RBAC)
+- Audit logs de toutes les actions
+
+### Multi-Tenant
+- Isolation complète des données par tenant
+- Abonnements (Trial, Active, Suspended, Cancelled)
+- Gestion de multiples magasins par tenant
+- Limites configurables (utilisateurs, magasins)
+
+### Gestion des stocks
+- Suivi en temps réel via WebSocket
+- Transactions atomiques (évite les doubles ventes)
+- Alertes de stock faible
+- Historique complet des mouvements
+- Ajustements d'inventaire
+
+### Gestion des ventes
+- Point de vente (POS) rapide
+- Multiples méthodes de paiement
+- Calcul automatique des taxes
+- Rapports et statistiques
+- Notifications en temps réel
+
+### Dashboards
+- SuperAdmin : Vue globale de tous les tenants
+- Directeur : Statistiques de son commerce
+- Gérant : Performance de son magasin
+- Vendeur : Interface de caisse
+- Magasinier : Gestion des stocks
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Next.js Frontend                  │
+│  (React 19 + Zustand + TypeScript + Tailwind)      │
+└─────────────────┬───────────────────────────────────┘
+                  │
+                  ├─── REST API (Next.js API Routes)
+                  │
+                  ├─── WebSocket (Socket.io)
+                  │
+┌─────────────────┴───────────────────────────────────┐
+│                Backend Services                      │
+│  ├─ Auth Service (JWT + 2FA)                       │
+│  ├─ Tenant Service (Multi-tenant Logic)            │
+│  ├─ Stock Service (Atomic Transactions)            │
+│  ├─ Sales Service                                   │
+│  └─ Audit Service                                   │
+└─────────────────┬───────────────────────────────────┘
+                  │
+    ┌─────────────┼─────────────┐
+    │             │             │
+┌───┴────┐   ┌───┴───┐   ┌────┴────┐
+│PostgreSQL│  │ Redis │   │Socket.io│
+│  (Data)  │  │(Cache)│   │  (WS)   │
+└──────────┘  └───────┘   └─────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Hiérarchie des rôles
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **SUPERADMIN** 🔴
+   - Gestion globale de la plateforme
+   - Création de tenants
+   - Accès à toutes les données
+   - 2FA OBLIGATOIRE
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **DIRECTEUR** 🟠
+   - Propriétaire d'un tenant
+   - Gestion des utilisateurs
+   - Gestion des magasins
+   - Statistiques et rapports
+   - 2FA OBLIGATOIRE
 
-## Learn More
+3. **GERANT** 🟡
+   - Gestion d'un magasin
+   - Gestion des stocks
+   - Supervision des ventes
 
-To learn more about Next.js, take a look at the following resources:
+4. **VENDEUR** 🟢
+   - Interface de caisse (POS)
+   - Création de ventes
+   - Consultation des produits
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **MAGASINIER** 🔵
+   - Gestion des stocks
+   - Ajustements d'inventaire
+   - Réceptions de marchandises
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠 Technologies
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Frontend
+- **Next.js 16** - Framework React avec SSR
+- **React 19** - Bibliothèque UI
+- **TypeScript** - Typage statique
+- **Zustand** - Gestion d'état globale
+- **Tailwind CSS** - Styling
+- **Shadcn/ui** - Composants UI
+- **Socket.io Client** - WebSocket
+- **Recharts** - Graphiques
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Backend
+- **Next.js API Routes** - API REST
+- **Prisma** - ORM
+- **PostgreSQL** - Base de données
+- **Redis** - Cache et sessions
+- **Socket.io** - WebSocket server
+- **JWT** - Authentification
+- **Speakeasy** - 2FA TOTP
+- **QRCode** - Génération QR codes
+- **Nodemailer** - Envoi d'emails
+
+### DevOps
+- **Docker** - Conteneurisation
+- **Docker Compose** - Orchestration
+- **Makefile** - Automatisation
+
+---
+
+## 📦 Installation
+
+### Prérequis
+
+- **Node.js** >= 20.x
+- **npm** >= 10.x
+- **Docker** & **Docker Compose** (pour l'environnement complet)
+- **PostgreSQL** 16+ (si pas Docker)
+- **Redis** 7+ (si pas Docker)
+
+### Installation locale (sans Docker)
+
+```bash
+# 1. Cloner le repository
+git clone https://github.com/votre-username/tradesphere.git
+cd tradesphere
+
+# 2. Installer les dépendances
+npm install
+
+# 3. Copier les variables d'environnement
+cp .env.example .env
+
+# 4. Configurer la base de données dans .env
+# DATABASE_URL="postgresql://user:password@localhost:5432/tradesphere?schema=public"
+
+# 5. Générer le client Prisma
+npx prisma generate
+
+# 6. Exécuter les migrations
+npx prisma migrate dev
+
+# 7. Remplir la base avec des données de test
+npm run seed
+
+# 8. Lancer l'application en mode développement
+npm run dev
+```
+
+L'application sera disponible sur **http://localhost:3000**
+
+### Installation avec Docker (Recommandé)
+
+```bash
+# 1. Cloner le repository
+git clone https://github.com/votre-username/tradesphere.git
+cd tradesphere
+
+# 2. Copier les variables d'environnement
+cp .env.example .env
+
+# 3. Démarrer tous les services
+make full-start
+
+# Ou manuellement :
+docker-compose build
+docker-compose up -d
+docker-compose exec app npx prisma migrate deploy
+docker-compose exec app npm run seed
+```
+
+L'application sera disponible sur **http://localhost:3000**
+
+---
+
+## ⚙️ Configuration
+
+### Variables d'environnement
+
+Créez un fichier `.env` à la racine du projet :
+
+```env
+# Database
+DATABASE_URL="postgresql://tradesphere:password@localhost:5432/tradesphere?schema=public"
+
+# JWT Secrets (CHANGEZ EN PRODUCTION!)
+JWT_ACCESS_SECRET=your-super-secret-access-key-change-in-production
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+# Email (Gmail)
+GMAIL_USER=your-email@gmail.com
+GMAIL_PASSWORD=your-app-specific-password
+
+# Application
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# 2FA
+TWO_FACTOR_APP_NAME=TradeSphere
+```
+
+### Configuration de l'email Gmail
+
+1. Activez la vérification en 2 étapes sur votre compte Gmail
+2. Générez un mot de passe d'application : https://myaccount.google.com/apppasswords
+3. Utilisez ce mot de passe dans `GMAIL_PASSWORD`
+
+---
+
+## 🚀 Utilisation
+
+### Comptes de test
+
+Après le seed, vous disposez des comptes suivants :
+
+#### SuperAdmin
+```
+Email: superadmin@tradesphere.com
+Mot de passe: SuperAdmin@2024
+```
+
+#### Directeur Tech Store
+```
+Email: directeur@techstore.cm
+Mot de passe: Directeur@2024
+```
+
+#### Directeur Fashion Boutique
+```
+Email: directeur@fashionboutique.sn
+Mot de passe: Directeur@2024
+```
+
+#### Gérant
+```
+Email: gerant@techstore.cm
+Mot de passe: Gerant@2024
+```
+
+#### Vendeur
+```
+Email: vendeur1@techstore.cm
+Mot de passe: Vendeur@2024
+```
+
+#### Magasinier
+```
+Email: magasinier@techstore.cm
+Mot de passe: Magasinier@2024
+```
+
+### Configuration de la 2FA
+
+1. Connectez-vous avec un compte SuperAdmin ou Directeur
+2. Allez dans **Paramètres** > **Sécurité**
+3. Activez la 2FA :
+   - **TOTP** : Scannez le QR code avec Google Authenticator ou Authy
+   - **Email** : Recevez le code par email
+
+---
+
+## 📚 API Documentation
+
+### Authentification
+
+#### POST /api/auth/login
+Connexion utilisateur
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Réponse :**
+```json
+{
+  "message": "Connexion réussie",
+  "user": {...},
+  "accessToken": "eyJ...",
+  "refreshToken": "eyJ..."
+}
+```
+
+#### POST /api/auth/verify-2fa
+Vérification du code 2FA
+
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+#### POST /api/auth/2fa/setup
+Configuration de la 2FA
+
+```json
+{
+  "type": "TOTP" // ou "EMAIL"
+}
+```
+
+**Réponse (TOTP) :**
+```json
+{
+  "type": "TOTP",
+  "secret": "BASE32SECRET",
+  "qrCode": "data:image/png;base64,..."
+}
+```
+
+#### POST /api/auth/2fa/enable
+Activer la 2FA
+
+```json
+{
+  "code": "123456"
+}
+```
+
+#### POST /api/auth/2fa/disable
+Désactiver la 2FA
+
+```json
+{
+  "password": "current-password",
+  "code": "123456"
+}
+```
+
+### Gestion des tenants (SuperAdmin uniquement)
+
+#### GET /api/tenants
+Liste tous les tenants
+
+#### POST /api/tenants
+Créer un nouveau tenant
+
+```json
+{
+  "slug": "mon-commerce",
+  "companyName": "Mon Commerce SARL",
+  "businessType": "Retail",
+  "country": "Cameroun",
+  "maxUsers": 10,
+  "maxStores": 3
+}
+```
+
+### Gestion des stocks
+
+#### PUT /api/stocks/:id
+Mettre à jour le stock
+
+```json
+{
+  "quantity": 10,
+  "type": "IN", // ou "OUT"
+  "reason": "purchase", // "sale", "adjustment", "return"
+  "notes": "Réception fournisseur"
+}
+```
+
+### WebSocket Events
+
+#### Connexion
+```javascript
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3000", {
+  path: "/api/socket",
+  auth: {
+    token: "YOUR_JWT_TOKEN"
+  }
+});
+```
+
+#### Événements disponibles
+
+```javascript
+// Mise à jour de stock
+socket.on("stock:update", (data) => {
+  console.log("Stock updated:", data);
+});
+
+// Alerte stock faible
+socket.on("stock:low", (data) => {
+  console.log("Low stock alert:", data);
+});
+
+// Vente complétée
+socket.on("sale:completed", (data) => {
+  console.log("Sale completed:", data);
+});
+```
+
+---
+
+## 🔐 Sécurité
+
+### Mesures implémentées
+
+1. **Authentification JWT**
+   - Access tokens courts (15 min)
+   - Refresh tokens longs (7 jours)
+   - Rotation des refresh tokens
+
+2. **2FA Obligatoire**
+   - SuperAdmin : OBLIGATOIRE
+   - Directeur : OBLIGATOIRE
+   - Autres rôles : Optionnel
+
+3. **RBAC (Role-Based Access Control)**
+   - Permissions granulaires
+   - Vérification à chaque requête
+   - Isolation multi-tenant
+
+4. **Isolation des données**
+   - Middleware de tenant
+   - Vérification systématique du tenant ID
+   - SuperAdmin seul peut accéder à tous les tenants
+
+5. **Transactions atomiques**
+   - Prisma transactions pour les stocks
+   - Évite les conditions de course
+   - Rollback automatique en cas d'erreur
+
+6. **Audit Logs**
+   - Traçabilité complète
+   - IP et User-Agent enregistrés
+   - Conservation configurable
+
+---
+
+## 🧪 Tests
+
+```bash
+# Tests unitaires
+npm run test
+
+# Tests d'intégration
+npm run test:integration
+
+# Tests E2E
+npm run test:e2e
+
+# Coverage
+npm run test:coverage
+```
+
+---
+
+## 🐳 Commandes Docker utiles
+
+```bash
+# Démarrer les services
+make up
+
+# Arrêter les services
+make down
+
+# Voir les logs
+make logs
+
+# Logs de l'application uniquement
+make logs-app
+
+# Shell dans le conteneur
+make docker-shell
+
+# Shell PostgreSQL
+make docker-db-shell
+
+# Migrations en production
+make docker-migrate
+
+# Seed en production
+make docker-seed
+
+# Reset complet
+make clean
+```
+
+---
+
+## 📈 Déploiement
+
+### Production avec Docker
+
+1. Configurez vos variables d'environnement de production
+2. Buildez l'image :
+```bash
+docker-compose -f docker-compose.prod.yml build
+```
+
+3. Démarrez les services :
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+4. Exécutez les migrations :
+```bash
+docker-compose exec app npx prisma migrate deploy
+```
+
+### Variables d'environnement production
+
+Assurez-vous de changer :
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `DATABASE_URL`
+- `REDIS_URL`
+- `NEXT_PUBLIC_APP_URL`
+
+---
+
+## 📄 Licence
+
+MIT License - voir le fichier [LICENSE](LICENSE)
+
+---
+
+## 👨‍💻 Contributeurs
+
+- Votre Nom - [GitHub](https://github.com/votre-username)
+
+---
+
+## 📞 Support
+
+Pour toute question ou problème :
+- 📧 Email : support@tradesphere.com
+- 🐛 Issues : [GitHub Issues](https://github.com/votre-username/tradesphere/issues)
+
+---
+
+**Fait avec ❤️ par l'équipe TradeSphere**
