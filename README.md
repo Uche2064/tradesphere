@@ -1,6 +1,6 @@
 #  TradeSphere - Plateforme SaaS Multi-Tenant de Gestion Commerciale
 
-## 📋 Table des matières
+## Table des matières
 
 - [À propos](#à-propos)
 - [Fonctionnalités](#fonctionnalités)
@@ -11,28 +11,26 @@
 - [Utilisation](#utilisation)
 - [API Documentation](#api-documentation)
 - [Sécurité](#sécurité)
-- [Tests](#tests)
-- [Déploiement](#déploiement)
 
 ---
 
-## 📖 À propos
+## À propos
 
-**TradeSphere** est une plateforme SaaS moderne de gestion commerciale multi-tenant conçue pour les entreprises de vente au détail et de commerce. Elle offre une gestion complète des stocks, des ventes, des utilisateurs et des statistiques en temps réel.
+**TradeSphere** est une plateforme SaaS moderne de gestion commerciale multi-tenant conçue pour les entreprises de vente. Elle offre une gestion complète des stocks, des ventes, des utilisateurs et des statistiques en temps réel.
 
 ### Caractéristiques principales
 
 -  **Multi-Tenant** : Isolation complète des données par commerce
-- 🔐 **Authentification 2FA** : TOTP, Email, SMS (OBLIGATOIRE pour SuperAdmin et Directeurs)
-- 👥 **RBAC Avancé** : 5 niveaux de rôles avec permissions granulaires
-- 📊 **Temps Réel** : WebSocket pour les mises à jour de stock et ventes
-- 🔄 **Transactions Atomiques** : Gestion sécurisée des stocks
-- 📈 **Statistiques** : Dashboards et rapports en temps réel
-- 🐳 **Dockerisé** : Déploiement facile avec Docker Compose
+-  **Authentification 2FA** : TOTP, Email, SMS (OBLIGATOIRE pour SuperAdmin et Directeurs)
+-  **RBAC Avancé** : 5 niveaux de rôles avec permissions granulaires
+-  **Temps Réel** : WebSocket pour les mises à jour de stock et ventes
+-  **Transactions Atomiques** : Gestion sécurisée des stocks
+-  **Statistiques** : Dashboards et rapports en temps réel
+-  **Dockerisé** : Déploiement facile avec Docker Compose
 
 ---
 
-## ⚡ Fonctionnalités
+## Fonctionnalités
 
 ### Gestion des utilisateurs
 - Système d'authentification JWT avec refresh tokens
@@ -113,7 +111,7 @@
    - Statistiques et rapports
    - 2FA OBLIGATOIRE
 
-3. **GERANT** 🟡
+3. **GERANT**
    - Gestion d'un magasin
    - Gestion des stocks
    - Supervision des ventes
@@ -123,7 +121,7 @@
    - Création de ventes
    - Consultation des produits
 
-5. **MAGASINIER** 🔵
+5. **MAGASINIER**
    - Gestion des stocks
    - Ajustements d'inventaire
    - Réceptions de marchandises
@@ -233,23 +231,15 @@ DATABASE_URL="postgresql://tradesphere:password@localhost:5432/tradesphere?schem
 # JWT Secrets (CHANGEZ EN PRODUCTION!)
 JWT_ACCESS_SECRET=your-super-secret-access-key-change-in-production
 JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
-JWT_ACCESS_EXPIRATION=15m
-JWT_REFRESH_EXPIRATION=7d
+JWT_ACCESS_EXPIRATION=3600
+JWT_REFRESH_EXPIRATION=604800
 
 # Email (Gmail)
 GMAIL_USER=your-email@gmail.com
 GMAIL_PASSWORD=your-app-specific-password
 
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
-
 # Redis
 REDIS_URL=redis://localhost:6379
-
-# 2FA
-TWO_FACTOR_APP_NAME=TradeSphere
-```
 
 ### Configuration de l'email Gmail
 
@@ -345,7 +335,7 @@ docker-compose exec app npx prisma studio
 
 ---
 
-## 👥 Schéma des Rôles
+## Schéma des Rôles
 
 ### Architecture RBAC (Role-Based Access Control)
 
@@ -494,43 +484,61 @@ Les permissions sont vérifiées à chaque requête API via des middlewares :
 
 ### Comptes de test
 
-Après le seed, vous disposez des comptes suivants :
+Après le seed, vous disposez des comptes suivants (tous les comptes utilisateurs ont `mustChangePassword: true` et nécessitent un changement de mot de passe à la première connexion) :
 
 #### SuperAdmin
 ```
-Email: superadmin@tradesphere.com
-Mot de passe: SuperAdmin@2024
+Email: admin@tradesphere.com (configurable via SUPERADMIN_EMAIL)
+Mot de passe: [GÉNÉRÉ ALÉATOIREMENT - voir console lors du seed]
+Nom complet: Super Administrateur (configurable via SUPERADMIN_FULL_NAME)
 ```
 
 #### Directeur Tech Store
 ```
 Email: directeur@techstore.cm
 Mot de passe: Directeur@2024
+Nom complet: Jean Dupont
+Téléphone: +237 677 111 111
+Entreprise: Tech Store (Cameroun)
 ```
 
 #### Directeur Fashion Boutique
 ```
 Email: directeur@fashionboutique.sn
 Mot de passe: Directeur@2024
+Nom complet: Marie Martin
+Téléphone: +221 77 222 222
+Entreprise: Fashion Boutique (Sénégal)
 ```
 
 #### Gérant
 ```
 Email: gerant@techstore.cm
 Mot de passe: Gerant@2024
+Nom complet: Paul Dubois
+Téléphone: +237 677 333 333
+Entreprise: Tech Store
+Magasin: Tech Store Douala Centre
 ```
 
 #### Vendeur
 ```
 Email: vendeur1@techstore.cm
 Mot de passe: Vendeur@2024
+Nom complet: Sophie Laurent
+Téléphone: +237 677 444 444
+Entreprise: Tech Store
+Magasin: Tech Store Douala Centre
 ```
 
 #### Magasinier
 ```
 Email: magasinier@techstore.cm
 Mot de passe: Magasinier@2024
-```
+Nom complet: Luc Bernard
+Téléphone: +237 677 555 555
+Entreprise: Tech Store
+Magasin: Tech Store Douala Centre
 
 ### Configuration de la 2FA
 
@@ -645,42 +653,6 @@ Mettre à jour le stock
   "notes": "Réception fournisseur"
 }
 ```
-
-### WebSocket Events
-
-#### Connexion
-```javascript
-import io from "socket.io-client";
-
-const socket = io("http://localhost:3000", {
-  path: "/api/socket",
-  auth: {
-    token: "YOUR_JWT_TOKEN"
-  }
-});
-```
-
-#### Événements disponibles
-
-```javascript
-// Mise à jour de stock
-socket.on("stock:update", (data) => {
-  console.log("Stock updated:", data);
-});
-
-// Alerte stock faible
-socket.on("stock:low", (data) => {
-  console.log("Low stock alert:", data);
-});
-
-// Vente complétée
-socket.on("sale:completed", (data) => {
-  console.log("Sale completed:", data);
-});
-```
-
----
-
 ## Sécurité
 
 ### Mesures implémentées
@@ -715,27 +687,6 @@ socket.on("sale:completed", (data) => {
    - IP et User-Agent enregistrés
    - Conservation configurable
 
-
-## 📈 Déploiement
-
-### Production avec Docker
-
-1. Configurez vos variables d'environnement de production
-2. Buildez l'image :
-```bash
-docker-compose -f docker-compose.prod.yml build
-```
-
-3. Démarrez les services :
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-4. Exécutez les migrations :
-```bash
-docker-compose exec app npx prisma migrate deploy
-```
-
 ### Variables d'environnement production
 
 Assurez-vous de changer :
@@ -744,27 +695,3 @@ Assurez-vous de changer :
 - `DATABASE_URL`
 - `REDIS_URL`
 - `NEXT_PUBLIC_APP_URL`
-
----
-
-## 📄 Licence
-
-MIT License - voir le fichier [LICENSE](LICENSE)
-
----
-
-## 👨‍💻 Contributeurs
-
-- Votre Nom - [GitHub](https://github.com/votre-username)
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-- 📧 Email : support@tradesphere.com
-- 🐛 Issues : [GitHub Issues](https://github.com/votre-username/tradesphere/issues)
-
----
-
-**Fait avec ❤️ par l'équipe TradeSphere**
