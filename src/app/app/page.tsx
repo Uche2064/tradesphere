@@ -7,6 +7,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { TopProductsTable } from "@/components/dashboard/TopProductsTable";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card";
 import { Button } from "@/lib/components/ui/button";
 import { ShoppingBag, DollarSign, Package, AlertTriangle, ShoppingCart } from "lucide-react";
@@ -15,6 +16,7 @@ import { RouteNames } from "@/lib/enums";
 import { getAppRouteName } from "@/lib/constants";
 
 export default function StaffDashboard() {
+  usePageTitle("Tableau de bord");
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { stats, isLoading: statsLoading } = useDashboardStats("30", user?.store?.id);

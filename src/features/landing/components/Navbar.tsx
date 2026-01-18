@@ -1,23 +1,51 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { Store } from "lucide-react";
+import { Store, LayoutDashboard } from "lucide-react";
 import { ModeToggle } from "@/lib/shared/components/ModeToggle";
+import { useAuthStore } from "@/stores/authStore";
+import { RoleType } from "@/lib/constants/roles";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/lib/components/ui/dropdown-menu";
+import { Button } from "@/lib/components/ui/button";
+import { Avatar, AvatarFallback } from "@/lib/components/ui/avatar";
 
-interface NavbarProps {
-  showNavigation: boolean;
-  user?: {
-    fullName: string;
-    email: string;
-    role: {
-      name: string;
-    };
-  } | null;
-  initials?: string;
-  dashboardPath?: string;
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function getDashboardPath(roleType: string): string {
+  switch (roleType) {
+    case RoleType.SUPERADMIN:
+      return "/superadmin";
+    case RoleType.DIRECTEUR:
+      return "/admin";
+    case RoleType.GERANT:
+    case RoleType.VENDEUR:
+    case RoleType.MAGASINIER:
+      return "/app";
+    default:
+      return "/app";
+  }
 }
 
 export default function Navbar() {
+  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
+  const initials = user ? getInitials(user.fullName) : "";
+  const dashboardPath = user ? getDashboardPath(user.role.type) : "";
+
   return (
     <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,15 +93,36 @@ export default function Navbar() {
 
           {/* CTA Buttons & Theme Switcher */}
           <div className="flex items-center gap-3">
-            <>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-blue-600 text-white">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuItem
+                    onClick={() => router.push(dashboardPath)}
+                    className="cursor-pointer"
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Go to dashboard</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
               <Link
                 href="/auth/login"
                 className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md"
               >
-                S'authentifier
+                S&apos;authentifier
               </Link>
-              <ModeToggle />
-            </>
+            )}
+            <ModeToggle />
           </div>
         </div>
       </div>

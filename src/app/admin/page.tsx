@@ -6,11 +6,13 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { TopProductsTable } from "@/components/dashboard/TopProductsTable";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/lib/components/ui/card";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card";
 import { Button } from "@/lib/components/ui/button";
 import { ShoppingBag, DollarSign, Package, AlertTriangle, Users, Store } from "lucide-react";
 
 export default function DirectorDashboard() {
+  usePageTitle("Tableau de bord Directeur");
   const router = useRouter();
   const { user } = useAuthStore();
   const { stats } = useDashboardStats("30");

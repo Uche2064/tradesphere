@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import ScrollToTopButton from "@/lib/shared/components/ScrollToTopButton";
 import Cta from "@/features/landing/components/Cta";
 import Features from "@/features/landing/components/Features";
@@ -10,6 +11,11 @@ import Security from "@/features/landing/components/Security";
 import UseCases from "@/features/landing/components/UseCases";
 import ContactForm from "@/features/landing/forms/ContactForm";
 import ContactMeForm from "@/features/landing/forms/ContactForm";
+
+export const metadata: Metadata = {
+  title: "Accueil",
+  description: "Découvrez TradeSphere, la plateforme de gestion complète pour votre entreprise",
+};
 
 export default function LandingPage() {
   return (

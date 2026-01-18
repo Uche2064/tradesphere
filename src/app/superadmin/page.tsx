@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import apiClient from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card";
 import { Button } from "@/lib/components/ui/button";
@@ -27,6 +28,7 @@ interface CompanyWithCount {
 }
 
 export default function SuperAdminDashboard() {
+  usePageTitle("Tableau de bord SuperAdmin");
   const router = useRouter();
   const { accessToken } = useAuthStore();
   const [companies, setCompanies] = useState<CompanyWithCount[]>([]);

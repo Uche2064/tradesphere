@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/lib/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/lib/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/lib/components/ui/label";
 import { toast } from "sonner";
 import { validateEmail, validateField } from "@/lib/validators";
 import { AxiosError } from "axios";

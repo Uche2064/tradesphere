@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/axios";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card";
 import { Button } from "@/lib/components/ui/button";
 import { Spinner } from "@/lib/components/ui/spinner";
 import { Package, Plus, Search } from "lucide-react";
 import { Input } from "@/lib/components/ui/input";
 import Image from "next/image";
+import AddProductDialog from "@/components/products/AddProductDialog";
 
 interface Product {
   id: string;
@@ -26,26 +28,28 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  usePageTitle("Produits");
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await apiClient.get("/api/products?limit=100");
+
+      if (response.data.success) {
+        setProducts(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await apiClient.get("/api/products?limit=100");
-
-        if (response.data.success) {
-          setProducts(response.data.data || []);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des produits:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -75,7 +79,7 @@ export default function ProductsPage() {
             Gérez les produits de votre entreprise
           </p>
         </div>
-        <Button onClick={() => router.push("/admin/products/new")}>
+        <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nouveau produit
         </Button>
@@ -150,6 +154,14 @@ export default function ProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      <AddProductDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={() => {
+          fetchProducts();
+        }}
+      />
     </div>
   );
 }
