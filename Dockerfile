@@ -11,6 +11,8 @@ RUN npm config set fetch-retries 5 \
 
 COPY . .
 
+RUN chmod +x scripts/start.sh
+
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["sh", "scripts/start.sh"]
