@@ -1,71 +1,37 @@
 services:
-  # Next.js Application
   web:
     build: .
-    container_name: tradesphere-app
-    restart: unless-stopped
+    container_name: tradesphere-web
     ports:
       - "3000:3000"
     env_file:
       - .env
+    depends_on:
+      - postgres
+      - redis
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - NEXT_TELEMETRY_DISABLED=1
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - tradesphere-network
     volumes:
       - .:/app
       - /app/node_modules
-
-  # PostgreSQL Database
   postgres:
     image: postgres:17
-    container_name: tradesphere-db
-    restart: unless-stopped
+    container_name: tradesphere-postgres
     environment:
       POSTGRES_USER: tradesphere
-      POSTGRES_PASSWORD: tradesphere_password_2026
-      POSTGRES_DB: tradesphere
+      POSTGRES_PASSWORD: tradesphere
+      POSTGRES_DB: tradesphere_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tradesphere"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tradesphere-network
-
-  # Redis for caching and sessions
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: tradesphere-redis
-    restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tradesphere-network
-
-networks:
-  tradesphere-network:
-    driver: bridge
 
 volumes:
   postgres_data:
-  redis_data:
