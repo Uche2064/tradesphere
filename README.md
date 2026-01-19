@@ -473,8 +473,8 @@ Après le seed, vous disposez des comptes suivants (tous les comptes utilisateur
 
 #### SuperAdmin
 ```
-Email: admin@tradesphere.com (configurable via SUPERADMIN_EMAIL)
-Mot de passe: [GÉNÉRÉ ALÉATOIREMENT - voir console lors du seed]
+Email: admin@tradesphere.com
+Mot de passe: SUPERADMIN@2024
 Nom complet: Super Administrateur (configurable via SUPERADMIN_FULL_NAME)
 ```
 

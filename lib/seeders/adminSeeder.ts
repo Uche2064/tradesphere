@@ -21,7 +21,7 @@ export async function adminSeed() {
   const superAdminFullName = "Super Administrateur";
 
   // Générer un mot de passe aléatoire sécurisé
-  const superAdminPassword = generateRandomPassword(); // 16 caractères pour le SuperAdmin
+  const superAdminPassword = "SUPERADMIN@2024"; // 16 caractères pour le SuperAdmin
   console.log("Génération d'un mot de passe temporaire...");
   console.log("Mot de passe temporaire généré.", superAdminPassword);
 
