@@ -1,6 +1,28 @@
-version: '3.8'
-
 services:
+  # Next.js Application
+  web:
+    build: .
+    container_name: tradesphere-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tradesphere-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
   # PostgreSQL Database
   postgres:
     image: postgres:17
@@ -8,7 +30,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: tradesphere
-      POSTGRES_PASSWORD: tradesphere_password_2024
+      POSTGRES_PASSWORD: tradesphere_password_2026
       POSTGRES_DB: tradesphere
     ports:
       - "5432:5432"
@@ -39,38 +61,6 @@ services:
       retries: 5
     networks:
       - tradesphere-network
-
-  # Next.js Application
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: tradesphere-app
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://tradesphere:tradesphere_password_2024@postgres:5432/tradesphere?schema=public
-      - REDIS_URL=redis://redis:6379
-      - JWT_ACCESS_SECRET=your-super-secret-access-key-change-in-production
-      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
-      - JWT_ACCESS_EXPIRATION=900
-      - JWT_REFRESH_EXPIRATION=604800
-      - NEXT_PUBLIC_APP_URL=http://localhost:3000
-      - TWO_FACTOR_APP_NAME=TradeSphere
-      # Email configuration (ajuster selon votre provider)
-      - GMAIL_USER=${GMAIL_USER}
-      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - tradesphere-network
-    volumes:
-      - ./public/uploads:/app/public/uploads
 
 networks:
   tradesphere-network:
