@@ -22,7 +22,7 @@ export async function seedCompanies() {
       country: "Sénégal",
       companyAddress: "45 Avenue des Champs, Dakar",
       subscriptionStatus: SubscriptionStatus.TRIAL,
-      maxUsers: 5,
+      maxUsers: 8,
       maxStores: 1,
     },
   ];
